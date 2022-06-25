@@ -1,0 +1,62 @@
+@startuml file upload and create product
+skinparam defaultFontName D2Coding
+
+scale 1
+title 파일업로드&상품업로드 프로세스
+
+actor user
+participant front
+participant back
+database database
+participant s3
+participant lamda
+
+user -> front : 이미지 선택
+activate front
+
+front -> back : 이미지 업로드 API 요청 \n(contentType: multipart/form-data)
+activate back
+
+back -> s3 : 이미지 파일이름 변경후 업로드
+activate s3
+
+s3 -> lamda : 비동기 이미지 업로드 감지 
+activate lamda
+
+s3 --> back
+deactivate s3
+
+lamda --> s3 : 이미지 압축후 저장
+deactivate lamda
+
+back -> database : DB 생성
+activate database
+
+database --> back : imageId 응답
+deactivate database
+
+back --> front : imageId 응답
+deactivate back
+
+front -> back : 상품 등록 API 요청 (imageId 포함)
+activate back
+
+back -> database : imageId 존재여부 체크
+activate database
+
+database --> back
+deactivate database
+
+back -> database : DB 상품 등록 생성
+activate database
+
+database --> back
+deactivate database
+
+back --> front : 상품등록 결과 응답 (압축된 이미지 경로 포함)
+deactivate back
+
+front --> user : 상품 등록 결과 페이지 응답
+deactivate front
+
+@enduml
