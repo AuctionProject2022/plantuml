@@ -1,0 +1,36 @@
+@startuml successful bid
+skinparam defaultFontName D2Coding
+
+scale 2
+title 낙찰 프로세스
+
+actor user
+participant front
+participant back
+participant cloudwatch
+participant labmda
+
+user -> front : 경매상품 등록
+activate front
+
+front -> back : 경매상품 API 요청
+activate back
+
+back -> cloudwatch : 종료 날짜와 함께 상품 ID 전달
+activate cloudwatch
+
+cloudwatch --> back
+deactivate cloudwatch
+
+back --> front : 경매상품 등록 결과 응답
+deactivate back
+
+front --> user : 경매상품 등록 결과 페이지 응답
+deactivate front
+
+cloudwatch -> labmda : 종료시간이 되면 비동기 lambda 호출
+activate labmda
+
+labmda -> labmda : 낙찰 API 호출 후 종료
+
+@enduml
